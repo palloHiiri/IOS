@@ -1,4 +1,6 @@
 #include "kernel.h"
+#include "common.h"
+#include "common.h"
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
@@ -55,6 +57,16 @@ void put(const char *s) {
     }
 }
 
+void sbi_hart_stop(void) {
+    sbi_call(0, 0, 0, 0, 0, 0, 1, 0x48534D);
+    while(1);
+}
+
+void sbi_system_shutdown(void) {
+    sbi_call(0, 0, 0, 0, 0, 0, 0, 0x53525354);
+    while(1);
+}
+
 
 void kernel_main(void) {
     put("Choose an option: \n");
@@ -62,7 +74,54 @@ void kernel_main(void) {
     put("2. Hart get status\n");
     put("3. Hart stop\n");
     put("4. System Shutdown\n");
+
+    for(;;) {
+        int option = getchar();
+        put("\n");
+
+        switch (option) {
+            case '1': {
+            struct sbiret result = sbi_call(0, 0, 0, 0, 0, 0, 2, 0x10);
+
+            printf("SBI implementation version: %d.%d\n", (result.value >> 16) & 0xFFFF, result.value & 0xFFFF);
+            break;
+            }
+            case '2':
+                put("Enter hart ID: ");
+                int hart_id;
+                while ((hart_id = getchar()) == -1)
+                    ;
+                putchar(hart_id);
+                put("\n");
+
+                hart_id = hart_id - '0';
+
+                struct sbiret res = sbi_call(hart_id, 0, 0, 0, 0, 0, 2, 0x48534D);
+
+                if (res.error != 0) {
+                    put("Hart status error");
+                    put("\n");
+                } else {
+                    put("Hart status: ");
+                    putchar(res.value + '0');
+                    put("\n");
 }
+                break;
+            case '3':
+                put("Stopping hart...");
+                sbi_hart_stop();
+                break;
+            case '4':
+                put("Stopping system");
+                sbi_system_shutdown();
+                break;
+            default:
+                put("Invalid option. Please choose again.\n");
+                break;  
+        }  
+    }     
+}
+
 
 __attribute__((section(".text.boot")))
 __attribute__((naked))
