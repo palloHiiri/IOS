@@ -55,6 +55,15 @@ void put(const char *s) {
     }
 }
 
+void sbi_hart_stop(void) {
+    sbi_call(0, 0, 0, 0, 0, 0, 1, 0x48534D);
+    while(1);
+}
+
+void sbi_system_shutdown(void) {
+    sbi_call(0, 0, 0, 0, 0, 0, 0, 0x53525354);
+    while(1);
+}
 
 void kernel_main(void) {
     put("Choose an option: \n");
