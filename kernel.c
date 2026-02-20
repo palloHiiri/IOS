@@ -49,23 +49,19 @@ getchar(void)
   return (int) ret.error;
 }
 
+void put(const char *s) {
+    while (*s) {
+        putchar(*s++);
+    }
+}
+
 
 void kernel_main(void) {
-    memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
-
-    const char *s = "\n\nHello World!\n";
-    for (int i = 0; s[i] != '\0'; i++) {
-        putchar(s[i]);
-    }
-
-    while (1){
-        int c = getchar();
-        if (c == '\r') {
-            putchar('\n');
-        } else {
-            putchar((char) c);
-        }
-    };
+    put("Choose an option: \n");
+    put("1. Get SBI implementation version\n");
+    put("2. Hart get status\n");
+    put("3. Hart stop\n");
+    put("4. System Shutdown\n");
 }
 
 __attribute__((section(".text.boot")))
