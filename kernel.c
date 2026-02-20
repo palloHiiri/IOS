@@ -33,7 +33,7 @@ struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
 }
 
 void putchar(char ch) {
-    sbi_call(ch, 0, 0, 0, 0, 0, 0, 0x01);
+    sbi_call(ch, 0, 0, 0, 0, 0, 0, SBI_CONSOLE_PUTCHAR);
 }
 
 int
@@ -43,8 +43,8 @@ getchar(void)
 
   do
   {
-    ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 0x02);
-  } while (ret.error == -1);
+    ret = sbi_call(0, 0, 0, 0, 0, 0, 0, SBI_CONSOLE_GETCHAR);
+  } while (ret.error == SBI_ERR_FAILED);
 
   return (int) ret.error;
 }
@@ -60,7 +60,11 @@ void kernel_main(void) {
 
     while (1){
         int c = getchar();
-        putchar((char) c);
+        if (c == '\r') {
+            putchar('\n');
+        } else {
+            putchar((char) c);
+        }
     };
 }
 
